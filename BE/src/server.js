@@ -3,56 +3,53 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 
-// 🔹 Load env FIRST
+// 🔹 Load environment variables FIRST
 dotenv.config();
 
-// 🔹 Init app
-const app = express();
-
-// 🔹 Connect DB
+// 🔹 Connect Database
 connectDB();
+
+// 🔹 Initialize app
+const app = express();
 
 // 🔹 Middlewares
 app.use(cors());
 app.use(express.json());
 
-// 🔹 Test route
+// 🔹 Health Check Route
 app.get("/", (req, res) => {
   res.send("🚀 AutoSphere ERP Backend Running");
 });
 
-// 🔹 Import routes
+// 🔹 Import Routes
 const customerRoutes = require("./routes/customer.routes");
 const vehicleRoutes = require("./routes/vehicle.routes");
 const jobRoutes = require("./routes/job.routes");
 const inventoryRoutes = require("./routes/inventory.routes");
 const billingRoutes = require("./routes/billing.routes");
 
-// 🔹 Debug (REMOVE later if you want)
-console.log("Routes check:");
-console.log({
-  customerRoutes,
-  vehicleRoutes,
-  jobRoutes,
-  inventoryRoutes,
-  billingRoutes,
+// 🔹 API Routes (NO conditions needed)
+app.use("/api/customers", customerRoutes);
+app.use("/api/vehicles", vehicleRoutes);
+app.use("/api/jobs", jobRoutes);
+app.use("/api/inventory", inventoryRoutes);
+app.use("/api/billing", billingRoutes);
+
+// 🔹 404 Handler (VERY IMPORTANT)
+app.use((req, res) => {
+  res.status(404).json({
+    message: "Route not found",
+  });
 });
 
-// 🔹 Use routes (ONLY if defined)
-if (customerRoutes) app.use("/api/customers", customerRoutes);
-if (vehicleRoutes) app.use("/api/vehicles", vehicleRoutes);
-if (jobRoutes) app.use("/api/jobs", jobRoutes);
-if (inventoryRoutes) app.use("/api/inventory", inventoryRoutes);
-if (billingRoutes) app.use("/api/billing", billingRoutes);
-
-// 🔹 Error middleware (optional)
+// 🔹 Global Error Handler
 const errorHandler = require("./middlewares/error.middleware");
-if (errorHandler) app.use(errorHandler);
+app.use(errorHandler);
 
 // 🔹 Port
 const PORT = process.env.PORT || 5000;
 
-// 🔹 Start server
+// 🔹 Start Server
 app.listen(PORT, () => {
   console.log(`🔥 Server running on port ${PORT}`);
 });
